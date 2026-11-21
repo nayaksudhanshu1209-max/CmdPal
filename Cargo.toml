@@ -2,7 +2,7 @@
 name = "cmdpal"
 version = "0.0.1"
 edition = "2021"
-rust-version = "1.82"
+rust-version = "1.88"
 description = "CmdPal - a fast, lightweight Windows command palette"
 publish = false
 

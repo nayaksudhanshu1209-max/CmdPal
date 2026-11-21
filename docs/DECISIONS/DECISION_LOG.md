@@ -32,5 +32,5 @@
 ### DEC-008 - Packaging: portable ZIP first
 - **Status:** Accepted. Unsigned portable ZIP + SHA-256. Installer deferred.
 
-### DEC-009 - CI: `windows-2022`, Rust 1.82.0 pinned via `rust-toolchain.toml`
+### DEC-009 - CI: `windows-2022`, Rust 1.88.0 pinned via `rust-toolchain.toml`
 - **Status:** Accepted. Actions pinned to major tags for now; pin to commit SHAs before first release. `windows` crate pinned to `=0.58.0`. Commit `Cargo.lock` after the first CI run.
