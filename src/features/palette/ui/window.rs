@@ -62,7 +62,12 @@ unsafe extern "system" fn wndproc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPARAM) 
             let mut text: Vec<u16> = "CmdPal foundation shell - Esc hides, Alt+F4 quits"
                 .encode_utf16()
                 .collect();
-            DrawTextW(hdc, &mut text, &mut rc, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+            DrawTextW(
+                hdc,
+                &mut text,
+                &mut rc,
+                DT_CENTER | DT_VCENTER | DT_SINGLELINE,
+            );
             let _ = EndPaint(hwnd, &ps);
             LRESULT(0)
         }

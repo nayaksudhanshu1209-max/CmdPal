@@ -36,8 +36,18 @@ mod tests {
     #[test]
     fn stays_inside_normal_and_offset_monitors() {
         for work in [
-            Rect { left: 0, top: 0, right: 1920, bottom: 1040 },
-            Rect { left: -1280, top: 100, right: 0, bottom: 1000 },
+            Rect {
+                left: 0,
+                top: 0,
+                right: 1920,
+                bottom: 1040,
+            },
+            Rect {
+                left: -1280,
+                top: 100,
+                right: 0,
+                bottom: 1000,
+            },
         ] {
             assert!(inside(centered_upper(work, 640, 72), work));
         }
@@ -45,7 +55,12 @@ mod tests {
 
     #[test]
     fn clamps_when_work_area_is_tiny() {
-        let work = Rect { left: 0, top: 0, right: 300, bottom: 40 };
+        let work = Rect {
+            left: 0,
+            top: 0,
+            right: 300,
+            bottom: 40,
+        };
         assert!(inside(centered_upper(work, 640, 72), work));
     }
 }
