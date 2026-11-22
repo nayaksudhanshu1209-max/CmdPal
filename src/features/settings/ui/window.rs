@@ -135,8 +135,9 @@ fn ensure(settings: SharedSettings, registry: Rc<Registry>) -> Result<(), String
     add(hwnd, font, "BUTTON", "Apply", WS_TABSTOP, (0, 0, 100, 30), ID_APPLY);
     add(hwnd, font, "BUTTON", "Close", WS_TABSTOP, (0, 0, 100, 30), ID_CLOSE);
     let status = add(hwnd, font, "STATIC", "", 0, (0, 0, 400, 22), ID_STATUS);
+    let draft = settings.borrow().clone();
     UI.with(|u| {
-        *u.borrow_mut() = Some(Ui { hwnd, sections, status, controls: vec![], content: vec![], draft: settings.borrow().clone(), page: 0, dirty: false, settings, registry, font });
+        *u.borrow_mut() = Some(Ui { hwnd, sections, status, controls: vec![], content: vec![], draft, page: 0, dirty: false, settings, registry, font });
     });
     layout(hwnd);
     Ok(())
@@ -297,7 +298,7 @@ fn build_page(idx: usize) {
 }
 
 fn ctl_of(list: &str, f: impl Fn(&Kind) -> bool) -> Vec<Ctl> {
-    st(|u| u.controls.iter().filter(|c| f(&c.kind)).cloned().collect()).unwrap_or_default().into_iter().filter(|c| match c.kind {
+    st(|u| u.controls.iter().filter(|c| f(&c.kind)).cloned().collect::<Vec<Ctl>>()).unwrap_or_default().into_iter().filter(|c| match c.kind {
         Kind::Field(l, _) | Kind::FieldCheck(l, _) | Kind::ListBox(l) | Kind::ListBtn(l, _) => l == list,
         _ => true,
     }).collect()

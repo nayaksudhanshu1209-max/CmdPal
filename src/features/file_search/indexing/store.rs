@@ -34,7 +34,7 @@ pub fn encode(r: &Records) -> String {
 pub fn decode(text: &str) -> Records {
     let mut out = Records::new();
     let mut cur: Option<(String, DirRecord)> = None;
-    let mut flush = |c: &mut Option<(String, DirRecord)>, out: &mut Records| {
+    let flush = |c: &mut Option<(String, DirRecord)>, out: &mut Records| {
         if let Some((p, d)) = c.take() {
             out.insert(p, Arc::new(d));
         }
