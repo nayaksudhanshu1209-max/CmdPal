@@ -1,0 +1,90 @@
+name: CI (Windows)
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Toolchain info
+        shell: pwsh
+        run: |
+          rustup show
+          cargo --version
+
+      - name: Ensure lockfile
+        shell: pwsh
+        run: |
+          if (-not (Test-Path Cargo.lock)) {
+            Write-Warning "Cargo.lock missing: generating one. Download the 'Cargo.lock-generated' artifact and commit it."
+            cargo generate-lockfile
+          }
+
+      # Style/lint findings are reported but do not block while the code base is young.
+      # Tighten later by removing continue-on-error (and adding -D warnings to clippy).
+      - name: Format check (non-blocking)
+        continue-on-error: true
+        run: cargo fmt --all -- --check
+
+      - name: Clippy (non-blocking)
+        continue-on-error: true
+        run: cargo clippy --all-targets
+
+      - name: Unit tests
+        run: cargo test --all-targets
+
+      - name: Release build (x64)
+        run: cargo build --release
+
+      - name: Smoke run (start, create windows, quit; record startup time and peak memory)
+        shell: pwsh
+        continue-on-error: true
+        run: |
+          New-Item -ItemType Directory -Force -Path smoke | Out-Null
+          Copy-Item target/release/cmdpal.exe smoke/CmdPal.exe
+          $p = Start-Process -FilePath "$PWD/smoke/CmdPal.exe" -ArgumentList "--smoke" -WorkingDirectory "$PWD/smoke" -PassThru
+          if (-not $p.WaitForExit(30000)) { $p.Kill(); throw "smoke run did not exit within 30 s" }
+          if ($p.ExitCode -ne 0) { throw "smoke run exit code $($p.ExitCode)" }
+          $r = Get-Content smoke/smoke-result.txt
+          "### Smoke run (CI runner, not the target low-end PC)" | Out-File $env:GITHUB_STEP_SUMMARY -Append
+          $r | ForEach-Object { "- $_" } | Out-File $env:GITHUB_STEP_SUMMARY -Append
+          "- exe size: $([math]::Round((Get-Item target/release/cmdpal.exe).Length/1KB)) KB" | Out-File $env:GITHUB_STEP_SUMMARY -Append
+
+      - name: Package (portable ZIP, unsigned)
+        shell: pwsh
+        run: |
+          $v = (Select-String -Path Cargo.toml -Pattern '^version\s*=\s*"(.+)"').Matches[0].Groups[1].Value
+          $name = "CmdPal-$v-win-x64-portable"
+          New-Item -ItemType Directory -Force -Path "dist/$name" | Out-Null
+          Copy-Item target/release/cmdpal.exe "dist/$name/CmdPal.exe"
+          Copy-Item README.md "dist/$name/README.md"
+          @(
+            "version: $v",
+            "commit: ${{ github.sha }}",
+            "run: ${{ github.run_number }}",
+            "type: portable ZIP, release build, UNSIGNED, self-contained (static CRT, no .NET)"
+          ) | Set-Content "dist/$name/BUILD-INFO.txt"
+          Compress-Archive -Path "dist/$name" -DestinationPath "dist/$name.zip"
+          $hash = (Get-FileHash "dist/$name.zip" -Algorithm SHA256).Hash.ToLower()
+          "$hash  $name.zip" | Set-Content "dist/$name.zip.sha256"
+          "ARTIFACT_NAME=$name" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.ARTIFACT_NAME }}
+          path: |
+            dist/*.zip
+            dist/*.sha256
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Cargo.lock-generated
+          path: Cargo.lock
