@@ -1,4 +1,5 @@
 # Architecture (Rust)
 Authoritative rules: `docs/requirements/ARCHITECTURE_CONTEXT.md` and `CMDPAL_MODULE_MAP.md`.
-Flow: `src/main.rs` -> `bootstrap/` (settings, `feature_registry`, lifecycle) -> `core/` (contracts, settings) -> `platform/windows/` (hotkey, shell) -> `features/<name>/{api.rs, logic/, ui/}`.
-Rust idiom: `api.rs` is the public entry file, `logic/coordinator.rs` the logic entry; unit tests live inline with the code they test.
+Flow: `src/main.rs` -> `bootstrap/` (settings load/recovery, shell handler, `feature_registry`, lifecycle) -> `core/` (contracts, settings, pure url/fuzzy/glob/hotkey) -> `platform/windows/` (hotkey, shell, gdi, window, icons, startup, proc, subclass) -> `features/<name>/`.
+Features: palette, suggestions (library-style: ranking/grouping), app_search, commands, web_bangs, file_search, quick_folders, notes, settings. They interact only through `core::contracts` (`Registry`: result providers, action handlers, bang sources, settings listeners) and a few public `api.rs` functions (settings -> file_search/notes).
+Rust idiom: `api.rs` is the public entry file, `logic/coordinator.rs` the logic entry; unit tests live inline with the code they test. Removing a feature = delete its registration line in `bootstrap/feature_registry.rs`, its folder, and its `pub mod` line in `features/mod.rs` (settings depends on file_search and notes APIs; remove those pages/buttons if you remove them).

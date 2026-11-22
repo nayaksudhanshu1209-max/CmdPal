@@ -1,0 +1,1 @@
+Original CmdPal icon (a ">_" prompt on a rounded blue square), generated for this project; no third-party artwork. `cmdpal.ico` holds 16/32/48/256 px PNG frames and is embedded by `build.rs` (resource id 1).
