@@ -18,11 +18,7 @@ impl Visibility {
 
     pub fn on_hotkey(&mut self) -> Action {
         self.visible = !self.visible;
-        if self.visible {
-            Action::Show
-        } else {
-            Action::Hide
-        }
+        if self.visible { Action::Show } else { Action::Hide }
     }
 
     pub fn on_escape(&mut self) -> Action {
@@ -30,6 +26,10 @@ impl Visibility {
     }
 
     pub fn on_focus_lost(&mut self) -> Action {
+        self.hide_if_visible()
+    }
+
+    pub fn on_command_done(&mut self) -> Action {
         self.hide_if_visible()
     }
 
@@ -55,13 +55,15 @@ mod tests {
     }
 
     #[test]
-    fn escape_and_focus_loss_hide_once() {
+    fn escape_focus_loss_and_command_hide_once() {
         let mut v = Visibility::default();
         v.on_hotkey();
         assert_eq!(v.on_focus_lost(), Action::Hide);
         assert_eq!(v.on_focus_lost(), Action::Nothing);
         v.on_hotkey();
         assert_eq!(v.on_escape(), Action::Hide);
+        v.on_hotkey();
+        assert_eq!(v.on_command_done(), Action::Hide);
         assert!(!v.is_visible());
     }
 }

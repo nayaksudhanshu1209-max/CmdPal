@@ -1,1 +1,9 @@
+pub mod app_search;
+pub mod commands;
+pub mod file_search;
+pub mod notes;
 pub mod palette;
+pub mod quick_folders;
+pub mod settings;
+pub mod suggestions;
+pub mod web_bangs;

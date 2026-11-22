@@ -1,0 +1,4 @@
+# settings
+**Does:** graphical settings window (opened from the palette: type "settings", or any setting's name) with pages General, Hidden results, Web bangs, Bookmarks, Commands, Files, File exclusions, Quick folders, Notes. Pages are declared as data in `logic/pages.rs`; `logic/binding.rs` maps controls to the canonical `Settings` model (tested round-trips). Controls edit a draft; **Apply** validates (`core::settings::validate`) and writes `%APPDATA%\CmdPal\settings.toml` atomically, then notifies features. Settings search is provided by `Search` in `logic/coordinator.rs`.
+**One source of truth:** the GUI and the TOML file both use `core::settings::Settings`; there is no second store. Hand-edited invalid files are caught at startup (reset offer, bad file kept as `settings.toml.bad`).
+Files: `api.rs`, `logic/{coordinator,pages,binding}.rs`, `ui/window.rs`. Depends on public APIs of `file_search` (status/pause/rebuild/clear) and `notes` (list/rename/delete/open).
